@@ -3,7 +3,7 @@ import { ANIME } from '@consumet/extensions';
 import { StreamingServers } from '@consumet/extensions/dist/models';
 
 const routes = async (fastify: FastifyInstance, options: RegisterOptions) => {
-  const zoro = new ANIME.Zoro();
+  const zoro = new ANIME.Zoro(process.env.ZORO_URL);
 
   fastify.get('/', (_, rp) => {
     rp.status(200).send({
@@ -29,11 +29,94 @@ const routes = async (fastify: FastifyInstance, options: RegisterOptions) => {
     async (request: FastifyRequest, reply: FastifyReply) => {
       const page = (request.query as { page: number }).page;
 
-      const res = await zoro.fetchRecentEpisodes(page);
+      const res = await zoro.fetchRecentlyUpdated(page);
 
       reply.status(200).send(res);
     },
   );
+
+  fastify.get('/top-airing', async (request: FastifyRequest, reply: FastifyReply) => {
+    const page = (request.query as { page: number }).page;
+
+    const res = await zoro.fetchTopAiring(page);
+
+    reply.status(200).send(res);
+  });
+
+  fastify.get('/most-popular', async (request: FastifyRequest, reply: FastifyReply) => {
+    const page = (request.query as { page: number }).page;
+
+    const res = await zoro.fetchMostPopular(page);
+
+    reply.status(200).send(res);
+  });
+
+  fastify.get('/most-favorite', async (request: FastifyRequest, reply: FastifyReply) => {
+    const page = (request.query as { page: number }).page;
+
+    const res = await zoro.fetchMostFavorite(page);
+
+    reply.status(200).send(res);
+  });
+
+  fastify.get(
+    '/latest-completed',
+    async (request: FastifyRequest, reply: FastifyReply) => {
+      const page = (request.query as { page: number }).page;
+
+      const res = await zoro.fetchLatestCompleted(page);
+
+      reply.status(200).send(res);
+    },
+  );
+
+  fastify.get('/recent-added', async (request: FastifyRequest, reply: FastifyReply) => {
+    const page = (request.query as { page: number }).page;
+
+    const res = await zoro.fetchRecentlyAdded(page);
+
+    reply.status(200).send(res);
+  });
+
+  fastify.get('/top-upcoming', async (request: FastifyRequest, reply: FastifyReply) => {
+    const page = (request.query as { page: number }).page;
+
+    const res = await zoro.fetchTopUpcoming(page);
+
+    reply.status(200).send(res);
+  });
+
+  fastify.get('/schedule/:date', async (request: FastifyRequest, reply: FastifyReply) => {
+    const date = (request.params as { date: string }).date;
+
+    const res = await zoro.fetchSchedule(date);
+
+    reply.status(200).send(res);
+  });
+
+  fastify.get('/studio/:studioId', async (request: FastifyRequest, reply: FastifyReply) => {
+    const studioId = (request.params as { studioId: string }).studioId;
+    const page = (request.query as { page: number }).page ?? 1;
+
+    const res = await zoro.fetchStudio(studioId, page);
+
+    reply.status(200).send(res);
+  });
+
+  fastify.get('/spotlight', async (request: FastifyRequest, reply: FastifyReply) => {
+    const res = await zoro.fetchSpotlight();
+
+    reply.status(200).send(res);
+  });
+
+  fastify.get('/search-suggestions/:query', async (request: FastifyRequest, reply: FastifyReply) => {
+    const query = (request.params as { query: string }).query;
+
+    const res = await zoro.fetchSearchSuggestions(query);
+
+    reply.status(200).send(res);
+  });
+
 
   fastify.get('/info', async (request: FastifyRequest, reply: FastifyReply) => {
     const id = (request.query as { id: string }).id;

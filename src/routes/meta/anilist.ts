@@ -8,6 +8,7 @@ import { StreamingServers } from '@consumet/extensions/dist/models';
 import cache from '../../utils/cache';
 import { redis } from '../../main';
 import NineAnime from '@consumet/extensions/dist/providers/anime/9anime';
+import Gogoanime from '@consumet/extensions/dist/providers/anime/gogoanime';
 
 const routes = async (fastify: FastifyInstance, options: RegisterOptions) => {
   fastify.get('/', (_, rp) => {
@@ -132,14 +133,15 @@ const routes = async (fastify: FastifyInstance, options: RegisterOptions) => {
       const weekEnd = (request.query as { weekEnd: number | string }).weekEnd;
       const notYetAired = (request.query as { notYetAired: boolean }).notYetAired;
 
-      const anilist = generateAnilistMeta();
+       const anilist = generateAnilistMeta();
+      const _weekStart = Math.ceil(Date.now() / 1000);
 
       const res = await anilist.fetchAiringSchedule(
-        page,
-        perPage,
-        weekStart,
-        weekEnd,
-        notYetAired,
+        page ?? 1,
+        perPage ?? 20,
+        weekStart ?? _weekStart,
+        weekEnd ?? _weekStart + 604800,
+        notYetAired ?? true,
       );
 
       reply.status(200).send(res);
@@ -363,7 +365,8 @@ const generateAnilistMeta = (provider: string | undefined = undefined): Anilist 
       url: process.env.PROXY as string | string[],
     });
   } else {
-    return new Anilist(undefined, {
+    // default provider is gogoanime
+    return new Anilist(new Gogoanime(), {
       url: process.env.PROXY as string | string[],
     });
   }
